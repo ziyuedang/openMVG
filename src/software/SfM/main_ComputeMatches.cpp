@@ -282,12 +282,12 @@ int main(int argc, char **argv)
   std::cout << std::endl << " - PUTATIVE MATCHES - " << std::endl;
   // If the matches already exists, reload them
   if (!bForce
-        && (stlplus::file_exists(sMatchesDirectory + "/matches.putative.txt")
+        && (stlplus::file_exists(sMatchesDirectory + "/matches.putative.bin")
         || stlplus::file_exists(sMatchesDirectory + "/matches.putative.bin"))
   )
   {
     if (!(Load(map_PutativesMatches, sMatchesDirectory + "/matches.putative.bin") ||
-          Load(map_PutativesMatches, sMatchesDirectory + "/matches.putative.txt")) )
+          Load(map_PutativesMatches, sMatchesDirectory + "/matches.putative.bin")) )
     {
       std::cerr << "Cannot load input matches file";
       return EXIT_FAILURE;

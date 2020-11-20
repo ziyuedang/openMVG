@@ -28,9 +28,16 @@
 #include <ceres/rotation.h>
 #include <ceres/types.h>
 
+#include <ceres/rotation.h>
+#include <ceres/types.h>
+#include <ceres/covariance.h>
+#include <ceres/crs_matrix.h>
+#include <ceres/cost_function.h>
+#include <ceres/local_parameterization.h>
+
 #include <iostream>
 #include <limits>
-
+#include <fstream>
 namespace openMVG {
 namespace sfm {
 
@@ -240,7 +247,6 @@ bool Bundle_Adjustment_Ceres::Adjust
   // Data wrapper for refinement:
   Hash_Map<IndexT, std::vector<double>> map_intrinsics;
   Hash_Map<IndexT, std::vector<double>> map_poses;
-
   // Setup Poses data & subparametrization
   for (const auto & pose_it : sfm_data.poses)
   {
@@ -254,13 +260,13 @@ bool Bundle_Adjustment_Ceres::Adjust
     ceres::RotationMatrixToAngleAxis((const double*)R.data(), angleAxis);
     // angleAxis + translation
     map_poses[indexPose] = {angleAxis[0], angleAxis[1], angleAxis[2], t(0), t(1), t(2)};
-
     double * parameter_block = &map_poses.at(indexPose)[0];
     problem.AddParameterBlock(parameter_block, 6);
     if (options.extrinsics_opt == Extrinsic_Parameter_Type::NONE)
     {
       // set the whole parameter block as constant for best performance
       problem.SetParameterBlockConstant(parameter_block);
+
     }
     else  // Subset parametrization
     {
@@ -475,6 +481,65 @@ bool Bundle_Adjustment_Ceres::Adjust
   ceres::Solve(ceres_config_options, &problem, &summary);
   if (ceres_options_.bCeres_summary_)
     std::cout << summary.FullReport() << std::endl;
+
+  if (options.jacobian_opt)
+  { 
+	  ceres::CRSMatrix jacobian;
+	  std::vector<double> residuals;
+	  if (problem.Evaluate(ceres::Problem::EvaluateOptions(), NULL, &residuals, NULL, &jacobian))
+	  {
+
+		  std::string rows = std::to_string(jacobian.num_rows);
+		  std::string cols = std::to_string(jacobian.num_cols);
+		  std::string jacobian_filename = "jacobian_num_rows_" + rows + "num_cols_" + cols + ".txt";
+		  std::cout << "Writing Jacobian to file..." << std::endl;
+		  std::ofstream& outfile = std::ofstream((char*)jacobian_filename.c_str());
+		  Mat dense_jacobian(jacobian.num_rows, jacobian.num_cols);
+		  dense_jacobian.setZero();
+		  for (int r = 0; r < jacobian.num_rows; ++r) {
+			  for (int idx = jacobian.rows[r]; idx < jacobian.rows[r + 1]; ++idx) {
+				  const int c = jacobian.cols[idx];
+				  dense_jacobian(r, c) = jacobian.values[idx];
+			  }
+		  }
+		  for (int i = 0; i < dense_jacobian.rows(); i++) {
+			  for (int j = 0; j < dense_jacobian.cols(); j++) {
+				  outfile << dense_jacobian(i, j) << "\t";
+			  }
+			  outfile << "\n";
+		  }
+		  //// rows
+		  //for (int i = 0; i < jacobian.num_rows; i++) {
+			 // outfile << jacobian.rows[i] << "\t";
+		  //}
+		  //outfile << std::endl;
+		  //// columns
+		  //for (int i = 0; i < jacobian.num_cols; i++) {
+			 // outfile << jacobian.cols[i] << "\t";
+		  //}
+		  //outfile << std::endl;
+		  //// values
+		  //for (int i = 0; i < jacobian.values.size(); i++) {
+			 // outfile << jacobian.values[i] << "\t";
+		  //}
+
+		  outfile.close();
+
+		  std::string residual_filename = "residuals" + std::to_string(residuals.size()) + ".txt";
+		  std::cout << "Writing residuals to file... " << std::endl;
+		  std::ofstream& outfile_res = std::ofstream((char*)residual_filename.c_str());
+		  for (int i = 0; i < residuals.size(); i++) {
+			  outfile_res << residuals[i] << std::endl;
+		  }
+		  outfile_res.close();
+	  }
+	  else
+	  {
+		  std::cout << "Jacobian evaluation failed! " << std::endl;
+	  }
+  }
+
+  
 
   // If no error, get back refined parameters
   if (!summary.IsSolutionUsable())

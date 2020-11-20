@@ -76,8 +76,8 @@ public:
       int first_octave = 0,
       int num_octaves = 6,
       int num_scales = 3,
-      float edge_threshold = 10.0f,
-      float peak_threshold = 0.04f,
+      float edge_threshold = 4.0f,
+      float peak_threshold = 0.12f,
       bool root_sift = true
     ):
       first_octave_(first_octave),
@@ -113,7 +113,7 @@ public:
     switch (preset)
     {
     case NORMAL_PRESET:
-      params_.peak_threshold_ = 0.04f;
+      params_.peak_threshold_ = 0.12f;
     break;
     case HIGH_PRESET:
       params_.peak_threshold_ = 0.01f;

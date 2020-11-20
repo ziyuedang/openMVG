@@ -425,6 +425,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
         Extrinsic_Parameter_Type::ADJUST_TRANSLATION, // Rotations are held as constant
         Structure_Parameter_Type::ADJUST_ALL,
         Control_Point_Parameter(),
+		false,
         this->b_use_motion_prior_)
     );
   if (b_BA_Status)
@@ -445,6 +446,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
           Extrinsic_Parameter_Type::ADJUST_ALL,
           Structure_Parameter_Type::ADJUST_ALL,
           Control_Point_Parameter(),
+		  false,
           this->b_use_motion_prior_)
       );
     if (b_BA_Status && !sLogging_file_.empty())
@@ -465,6 +467,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
           Extrinsic_Parameter_Type::ADJUST_ALL,
           Structure_Parameter_Type::ADJUST_ALL,
           Control_Point_Parameter(),
+		  false,
           this->b_use_motion_prior_)
       );
     if (b_BA_Status && !sLogging_file_.empty())
@@ -514,6 +517,7 @@ bool GlobalSfMReconstructionEngine_RelativeMotions::Adjust()
     Extrinsic_Parameter_Type::ADJUST_ALL,  // adjust camera motion
     Structure_Parameter_Type::ADJUST_ALL,  // adjust scene structure
     Control_Point_Parameter(),
+	true,
     this->b_use_motion_prior_);
 
   b_BA_Status = bundle_adjustment_obj.Adjust(sfm_data_, ba_refine_options);

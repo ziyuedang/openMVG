@@ -53,6 +53,7 @@ struct Optimize_Options
   Extrinsic_Parameter_Type extrinsics_opt;
   Structure_Parameter_Type structure_opt;
   Control_Point_Parameter control_point_opt;
+  bool jacobian_opt;
   bool use_motion_priors_opt;
 
   Optimize_Options
@@ -61,12 +62,14 @@ struct Optimize_Options
     const Extrinsic_Parameter_Type extrinsics = Extrinsic_Parameter_Type::ADJUST_ALL,
     const Structure_Parameter_Type structure = Structure_Parameter_Type::ADJUST_ALL,
     const Control_Point_Parameter & control_point = Control_Point_Parameter(0.0, false), // Default setting does not use GCP in the BA
+	const bool jacobian_ = false,
     const bool use_motion_priors = false
   )
   :intrinsics_opt(intrinsics),
    extrinsics_opt(extrinsics),
    structure_opt(structure),
    control_point_opt(control_point),
+   jacobian_opt(jacobian_),
    use_motion_priors_opt(use_motion_priors)
   {
   }
